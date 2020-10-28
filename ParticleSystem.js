@@ -54,6 +54,17 @@ export class ParticleEmitter extends Object3D
         //console.log(this.particleList[9]);
     }
 
+    shutdown()
+    {
+        /*
+        for (let i = 0; i < this.visibleParticles; i++)
+        {
+            this.scene.remove(this.particleList[i]);
+        }
+        */
+       this.scene.remove(this);
+    }
+
     update()
     {
         // Move and create particles. Fill the list and once it’s full, put old particles back to a new starting point.
@@ -94,10 +105,22 @@ export class ParticleEmitter extends Object3D
 
     moveParticles(time)
     {
-        for (var i = 0; i < this.visibleParticles; i++)
+        for (let i = 0; i < this.visibleParticles; i++)
         {
             this.particleList[i].position.x += this.speed * time;
         }
+    }
+
+    changeScale(x)
+    {
+        for (let i = 0; i < this.visibleParticles; i++)
+        {
+            this.particleList[i].scale.x = x;
+            this.particleList[i].scale.y = x;
+            this.particleList[i].scale.z = x;
+            
+        }
+        console.log(this.particleList[0].scale.x);
     }
 }
 

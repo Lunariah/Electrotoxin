@@ -1,5 +1,5 @@
 //import "./dat.gui.js"
-import {WebGLRenderer, Scene, Audio as THREEAudio, AudioListener, AudioAnalyser, PerspectiveCamera, SpotLight, PlaneGeometry, SphereGeometry, MeshLambertMaterial, MeshPhongMaterial, MeshBasicMaterial, DoubleSide, Mesh, BoxGeometry} from "./three.module.js"
+import {WebGLRenderer, Scene, Audio as THREEAudio, AudioListener, AudioAnalyser, PerspectiveCamera, SpotLight, PlaneGeometry, SphereGeometry, MeshLambertMaterial, MeshPhongMaterial, MeshBasicMaterial, DoubleSide, Mesh, BoxGeometry, Clock} from "./three.module.js"
 import {ParticleEmitter} from "./ParticleSystem.js"
 import "./stats.module.js"
 import Stats from "./stats.module.js";
@@ -10,6 +10,7 @@ var state = 1;
 var startDate;
 var renderer;
 var stats;
+var clock;
 
 var rotationSpeed = 0.01;
 var planeColor = "#ff0000";
@@ -52,6 +53,9 @@ function init()
     // Scene
     scene = new Scene();
 
+    // Clock
+    clock = new Clock();
+
     // Audio
     listener = new AudioListener();
     audio = new THREEAudio(listener);
@@ -85,8 +89,8 @@ function init()
     emitterNorth = new ParticleEmitter(scene, 0.1, 100, 0.5, 100);
     emitterNorth.setPosition(-70, 100, 0);
     */
-    emitterWest = new ParticleEmitter(scene, 0.2, 250, 0.5, 50, 80);
-    emitterWest.setPosition(-100, -60, -80);
+    emitterWest = new ParticleEmitter(scene, 0.2, 250, 0.5, 50, 100);
+    emitterWest.setPosition(-100, -40, -80);
     emitterSouth = new ParticleEmitter(scene, 0.2, 100, 0.5, 70, 50);
     emitterSouth.setPosition(-60, -80, 0);
 
@@ -95,7 +99,7 @@ function init()
 
     // Plane 0
     var planeGeometry = new PlaneGeometry(30, 20, 1, 1);
-    var planeMaterial = new MeshPhongMaterial({ color: "#FF0000", side: DoubleSide });
+    var planeMaterial = new MeshPhongMaterial({ color: "#042fd4", side: DoubleSide });
     plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -0.5 * Math.PI;
     plane.position.x = 0;
@@ -116,27 +120,26 @@ function init()
 
     startDate = Date.now();
 
-    //emitterWest.moveParticles(10);
-    //emitterWest.moveParticles(10);
     render();
 }
 
 function render() 
 {
     //stats.update();
+    var time = Date.now()-startDate;
+    analyser.getFrequencyData();
 
     //emitterNorth.update();
     //emitterEast.update();
     emitterWest.update();
     emitterSouth.update();
 
-    var time = Date.now()-startDate;
-    //analyser.getFrequencyData();
-
     //camera.position.x += Math.cos(time);
 
-    plane.material.color.set(planeColor);
+    //plane.material.color.set(planeColor);
     renderer.setClearColor(backgroundColor);
+
+    console.log("State: " + state); 
 
     switch (state) {
         case 1:
@@ -186,6 +189,12 @@ function render()
             break;
         case 11:
             step11();
+            if (time > 207000) {
+                emitterWest.shutdown();
+                emitterSouth.shutdown();
+            }
+            break;
+        case 12:
             break;
         default:
             console.error("State machine broke. state=" + state);
@@ -208,50 +217,59 @@ function render()
     function step3()
     {
         plane.rotation.z -= rotationSpeed;
-
     }
 
     function step4()
     {
+        plane.rotation.z -= rotationSpeed / 10;
         plane.rotation.x += rotationSpeed;
+        
     }
 
     function step5()
     {
+        plane.rotation.z -= rotationSpeed / 10;
         plane.rotation.x -= rotationSpeed;
     }
 
     function step6()
     {
-        plane.rotation.y += rotationSpeed;
+        plane.rotation.x += rotationSpeed / 10;
+        plane.rotation.z += rotationSpeed;
     }
 
     function step7()
     {
-        plane.rotation.y -= rotationSpeed;
+        plane.rotation.x += rotationSpeed / 10;
+        plane.rotation.z -= rotationSpeed * 2;
     }
 
     function step8()
     {
+        plane.rotation.x += rotationSpeed;
         plane.rotation.z += rotationSpeed;
-        plane.rotation.y += rotationSpeed;
     }
 
     function step9()
     {
-        plane.rotation.z += rotationSpeed;
-        plane.rotation.y -= rotationSpeed;
+        plane.rotation.z += rotationSpeed / 2;
+        plane.rotation.x -= rotationSpeed / 2;
     }
 
     function step10()
     {
-        plane.rotation.z -= rotationSpeed;
-        plane.rotation.y += rotationSpeed;
+        plane.rotation.z -= rotationSpeed * 3;
+        plane.rotation.y += rotationSpeed * 3;
     }
 
     function step11()
     {
-        plane.rotation.z -= rotationSpeed;
-        plane.rotation.y -= rotationSpeed;
+        plane.rotation.z -= rotationSpeed * 4;
+        plane.rotation.y -= rotationSpeed * 4;
+
+        console.log(analyser.data[3] + "/" + analyser.data[4] + "/" + analyser.data[5]);    
+        let starScale = (analyser.data[3] + analyser.data[4] + analyser.data[5] - 300) / 50;
+        emitterWest.changeScale(starScale);
+        emitterSouth.changeScale(starScale);
     }
 }
