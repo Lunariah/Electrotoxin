@@ -139,7 +139,7 @@ function render()
     //plane.material.color.set(planeColor);
     renderer.setClearColor(backgroundColor);
 
-    console.log("State: " + state); 
+    console.log(time);
 
     switch (state) {
         case 1:
@@ -181,17 +181,22 @@ function render()
             break;
         case 9:
             step9();
-            if (time > 141000) state=10;
+            if (time > 141000) {
+                state=10;
+                emitterWest.speed *= 1.5;
+                emitterSouth.speed *= 1.5;
+            }
             break;
         case 10:
             step10();
-            if (time > 183000) state=11;
+            if (time > 173000) state=11;
             break;
         case 11:
             step11();
             if (time > 207000) {
                 emitterWest.shutdown();
                 emitterSouth.shutdown();
+                scene.remove(plane);
             }
             break;
         case 12:
